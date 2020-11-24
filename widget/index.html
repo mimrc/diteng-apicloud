@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+  <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+  <title>地藤管家</title>
+  <link rel="stylesheet" type="text/css" href="./css/api.css" />
+  <link rel="stylesheet" type="text/css" href="./css/common.css" />
+</head>
+
+<body>
+</body>
+<script type="text/javascript" src="./script/api.js"></script>
+<script type="text/javascript">
+  var launchRemoved = false;
+  var loadingRemoved = false;
+  var url = "https://develop.diteng.site";
+  // var url = "https://beta.diteng.site";
+  // var url = "http://192.168.10.119";
+  var mainUrl;
+  var headerPos, mainPos;
+  var registrationId;
+  var ajpush = null;
+  var aliasId = "";
+  apiready = function () {
+    var deviceId = api.deviceId;
+    var sType = api.systemType;
+    ajpush = api.require('ajpush');
+
+    var header = $api.byId('header');
+    // 适配iOS 7+，Android 4.4+状态栏
+    $api.fixStatusBar(header);
+
+    var main = $api.byId('main');
+    headerPos = $api.offset(header);
+    mainPos = $api.offset(main);
+
+    deviceId = deviceId.replace(/-/g, "");
+    deviceId = deviceId.replace(/:/g, "");
+
+    if (sType == "android") {
+      mainUrl = url + '/public/WebDefault?CLIENTID=n_' + deviceId + '&device=android';
+      aliasId = "n_" + deviceId;
+    } else {
+      mainUrl = url + '/public/WebDefault?CLIENTID=i_' + deviceId + '&device=iphone';
+      aliasId = "i_" + deviceId;
+    }
+    console.log(mainUrl);
+    initApp(mainUrl);
+    ajpush.init(function (ret) {
+      if (ret && ret.status) {
+        console.log("极光推送注册成功");
+      }
+    });
+
+    var param = { alias: aliasId };
+    //绑定用户别名为极光id。服务端可以指定别名进行消息推送
+    ajpush.bindAliasAndTags(param, function (ret) {
+      var statusCode = ret.statusCode;
+      console.log("注册信息:" + JSON.stringify(ret));
+    });
+
+    ajpush.getRegistrationId(function (ret, err) {
+      if (ret.id) {
+        registrationId = ret.id;
+        console.log("=registrationId==" + ret.id + "==aliasId==" + aliasId);
+        api.setPrefs({
+          key: 'registrationId',
+          value: ret.id
+        });
+      }
+    });
+    api.setFrameClient({
+      frameName: 'main'
+    }, function (ret) {
+      if (ret.state == 2) {
+        var urlTag = ret.url.indexOf("/forms/");
+        if (urlTag == -1) {
+          $api.attr($api.byId('goBack'), "onclick", "goHistoryBack()");
+          api.addEventListener({
+            name: 'keyback'
+          }, function (ret, err) {
+            api.historyBack({
+              frameName: 'main'
+            }, function (ret, err) {
+            });
+          });
+        } else {
+          $api.attr($api.byId('goBack'), "onclick", "goBack()");
+          api.addEventListener({
+            name: 'keyback'
+          }, function (ret, err) {
+            api.execScript({
+              frameName: 'main',
+              script: 'ReturnBtnClick()'
+            });
+          });
+        }
+      } else if (ret.state == 3) {
+        $api.text($api.byId('title'), ret.title);
+      }
+      onBrowserStateChange(ret);
+    });
+
+    removeLogic();
+    api.addEventListener({
+      name: 'keyback'
+    }, function (ret, err) {
+      api.historyBack({
+        frameName: 'main'
+      }, function (ret, err) {
+        if (!ret.status) {
+          api.closeWidget();
+        }
+      });
+    });
+    removeLogic();
+  };
+
+  function initApp(mainUrl) {
+    api.openTabLayout({
+      name: 'main',
+      url: mainUrl,
+      bgColor: '#000',
+      hideNavigationBar: false,
+      navigationBar: {
+        background: '#000',
+        color: '#fff',
+        fontSize: 20,
+        fontWeight: 'bold',
+        leftButtons: [{
+          iconPath: "widget://image/left_back.png"
+        }],
+        rightButtons: [{
+          iconPath: "widget://image/more.png"
+        }]
+      }
+    });
+  }
+
+  function aMapLocation() {
+    var perms = ['camera', 'phone', 'storage']
+    if (!confirmPer(perms)) {
+      return;
+    }
+  }
+
+  function goHistoryBack() {
+    api.historyBack({
+      frameName: 'main'
+    }, function (ret, err) {
+    });
+  }
+
+  function goBack() {
+    api.execScript({
+      frameName: 'main',
+      script: 'ReturnBtnClick()'
+    });
+  }
+
+  function onBrowserStateChange(ret) {
+    if (0 == ret.state) {//开始加载
+      if (!launchRemoved) {
+        launchRemoved = true;
+        removeLaunch();
+      }
+    }
+    if (2 == ret.state) {
+      if (!loadingRemoved) {
+        loadingRemoved = true;
+      }
+    }
+  }
+
+  function removeLogic() {
+    setTimeout(function () {
+      if (!launchRemoved) {
+        launchRemoved = true;
+        removeLaunch();
+      }
+    }, 3000);
+  }
+
+  function removeLaunch() {
+    api.removeLaunchView({
+      animation: {
+        type: "fade",
+        subType: "from_right",
+        duration: 300
+      }
+    });
+  }
+
+  function confirmPer(perms) {
+    var has = api.hasPermission({
+      list: perms
+    });
+    if (!has || !has[0] || !has[0].granted) {
+      api.requestPermission({
+        list: perms,
+        code: 100001
+      }, function (ret, err) {
+      });
+      return false;
+    }
+    return true;
+  }
+
+</script>
+
+</html>
