@@ -151,11 +151,18 @@
   }
 
   function goHistoryBack() {
-    var name = $api.attr($api.byId('header'), 'frameName');
+    var fname = $api.attr($api.byId('header'), 'frameName');
+    console.log(fname)
     api.historyBack({
-      frameName: name
+      frameName: fname
     }, function (ret, err) {
       if (!ret.status) {
+        if( api.frames().length > 1){
+          api.execScript({
+            frameName: fname,
+            script:'window.ApiCloud.CloseFrame();'
+          })
+        }
       }
     });
   }
