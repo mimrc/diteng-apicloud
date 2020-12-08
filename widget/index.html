@@ -1,25 +1,32 @@
 <!doctype html>
 <html>
-
 <head>
   <meta charset="utf-8">
-  <meta name="viewport"
-    content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+  <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
   <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
   <title>地藤管家</title>
   <link rel="stylesheet" type="text/css" href="./css/api.css" />
   <link rel="stylesheet" type="text/css" href="./css/common.css" />
 </head>
-
 <body>
+    <div id="wrap">
+      <div id='header'>
+        <div class="back" id="goBack" tapmode="back-active" onclick="headerLeft()"></div>
+        <h1 id="title" onclick="headerCenter()">窗口</h1>
+        <div class="adpt" onclick="headerRight()"></div>
+      </div>
+      <div id="main">
+    
+      </div>
+    </div>
 </body>
 <script type="text/javascript" src="./script/api.js"></script>
 <script type="text/javascript">
   var launchRemoved = false;
   var loadingRemoved = false;
-  var url = "https://develop.diteng.site";
+  // var url = "https://develop.diteng.site";
   // var url = "https://beta.diteng.site";
-  // var url = "http://192.168.10.119";
+  var url = "http://192.168.10.119:82";
   var mainUrl;
   var headerPos, mainPos;
   var registrationId;
@@ -57,7 +64,7 @@
     });
 
     var param = { alias: aliasId };
-    //绑定用户别名为极光id。服务端可以指定别名进行消息推送
+    // 绑定用户别名为极光id。服务端可以指定别名进行消息推送
     ajpush.bindAliasAndTags(param, function (ret) {
       var statusCode = ret.statusCode;
       console.log("注册信息:" + JSON.stringify(ret));
@@ -121,24 +128,54 @@
   };
 
   function initApp(mainUrl) {
-    api.openTabLayout({
-      name: 'main',
-      url: mainUrl,
-      bgColor: '#000',
-      hideNavigationBar: false,
-      navigationBar: {
-        background: '#000',
-        color: '#fff',
-        fontSize: 20,
-        fontWeight: 'bold',
-        leftButtons: [{
-          iconPath: "widget://image/left_back.png"
-        }],
-        rightButtons: [{
-          iconPath: "widget://image/more.png"
-        }]
-      }
+    var frameName = "main";
+    api.openFrame({
+      name: frameName,
+      url: mainUrl
     });
+    showFrame(frameName);
+  }
+
+  function showFrame(frameName) {
+    var top = $api.fixStatusBar($api.byId('header'));
+    var frames = api.frames();
+    for (var key in frames) {
+      console.log('showFrame:',key,frames[key].name)
+      api.setFrameAttr({
+        name: frames[key].name,
+        rect: {
+          marginTop: top
+        },
+        hidden: true
+      });
+    }
+    api.setFrameAttr({
+      name: frameName,
+      hidden: false
+    });
+  }
+
+  function hideHeader(flog, name) {
+    document.querySelector("#header").style.display = flog ? "none" : "-webkit-box";
+    showFrame(name);
+  }
+
+  function closeWin() {
+    api.setStatusBarStyle({
+      style: 'dark'
+    });
+    api.closeWin();
+  }
+
+  function createFrame(mainUrl) {
+    console.log('createFrame:',mainUrl,api.frames().length);
+    var frames = api.frames();
+    var name = 'main' + new Date().getTime();
+    api.openFrame({
+      name: name,
+      url: mainUrl
+    });
+    showFrame(name);
   }
 
   function aMapLocation() {
@@ -210,6 +247,30 @@
     return true;
   }
 
+  function headerLeft() {
+    api.sendEvent({
+      name: 'headerEvent',
+      extra: {
+        type: 'left'
+      }
+    })
+  }
+  function headerCenter() {
+    api.sendEvent({
+      name: 'headerEvent',
+      extra: {
+        type: 'center'
+      }
+    })
+  }
+  function headerRight() {
+    api.sendEvent({
+      name: 'headerEvent',
+      extra: {
+        type: 'right'
+      }
+    })
+  }
 </script>
 
 </html>
