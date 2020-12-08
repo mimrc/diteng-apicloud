@@ -1,24 +1,27 @@
 <!doctype html>
 <html>
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+  <meta name="viewport"
+    content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
   <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
   <title>地藤管家</title>
   <link rel="stylesheet" type="text/css" href="./css/api.css" />
   <link rel="stylesheet" type="text/css" href="./css/common.css" />
 </head>
+
 <body>
-    <div id="wrap">
-      <div id='header'>
-        <div class="back" id="goBack" tapmode="back-active" onclick="headerLeft()"></div>
-        <h1 id="title" onclick="headerCenter()">窗口</h1>
-        <div class="adpt" onclick="headerRight()"></div>
-      </div>
-      <div id="main">
-    
-      </div>
+  <div id="wrap">
+    <div id='header'>
+      <div class="back" tapmode="back-active" onclick="headerLeft()"></div>
+      <h1 id="title" onclick="headerCenter()">地藤管家</h1>
+      <div class="adpt" onclick="headerRight()"></div>
     </div>
+    <div id="main">
+
+    </div>
+  </div>
 </body>
 <script type="text/javascript" src="./script/api.js"></script>
 <script type="text/javascript">
@@ -80,51 +83,7 @@
         });
       }
     });
-    api.setFrameClient({
-      frameName: 'main'
-    }, function (ret) {
-      if (ret.state == 2) {
-        var urlTag = ret.url.indexOf("/forms/");
-        if (urlTag == -1) {
-          $api.attr($api.byId('goBack'), "onclick", "goHistoryBack()");
-          api.addEventListener({
-            name: 'keyback'
-          }, function (ret, err) {
-            api.historyBack({
-              frameName: 'main'
-            }, function (ret, err) {
-            });
-          });
-        } else {
-          $api.attr($api.byId('goBack'), "onclick", "goBack()");
-          api.addEventListener({
-            name: 'keyback'
-          }, function (ret, err) {
-            api.execScript({
-              frameName: 'main',
-              script: 'ReturnBtnClick()'
-            });
-          });
-        }
-      } else if (ret.state == 3) {
-        $api.text($api.byId('title'), ret.title);
-      }
-      onBrowserStateChange(ret);
-    });
-
-    removeLogic();
-    api.addEventListener({
-      name: 'keyback'
-    }, function (ret, err) {
-      api.historyBack({
-        frameName: 'main'
-      }, function (ret, err) {
-        if (!ret.status) {
-          api.closeWidget();
-        }
-      });
-    });
-    removeLogic();
+    
   };
 
   function initApp(mainUrl) {
@@ -134,25 +93,22 @@
       url: mainUrl
     });
     showFrame(frameName);
+    setHeaderFrameName(frameName);
   }
 
   function showFrame(frameName) {
     var top = $api.fixStatusBar($api.byId('header'));
     var frames = api.frames();
     for (var key in frames) {
-      console.log('showFrame:',key,frames[key].name)
       api.setFrameAttr({
         name: frames[key].name,
         rect: {
           marginTop: top
         },
-        hidden: true
+        hidden: false
       });
     }
-    api.setFrameAttr({
-      name: frameName,
-      hidden: false
-    });
+    initFrames(frameName)
   }
 
   function hideHeader(flog, name) {
@@ -160,15 +116,7 @@
     showFrame(name);
   }
 
-  function closeWin() {
-    api.setStatusBarStyle({
-      style: 'dark'
-    });
-    api.closeWin();
-  }
-
-  function createFrame(mainUrl) {
-    console.log('createFrame:',mainUrl,api.frames().length);
+  function newFrame(mainUrl) {
     var frames = api.frames();
     var name = 'main' + new Date().getTime();
     api.openFrame({
@@ -176,6 +124,23 @@
       url: mainUrl
     });
     showFrame(name);
+    setTimeout(function(){
+      hideHeader(false, name);
+    },100);
+    setHeaderFrameName(name);
+  }
+
+  function setHeaderTitle(title) {
+    $api.text($api.byId('title'), title);
+  }
+
+  function setHeaderFrameName(name) {
+    $api.attr($api.byId('header'), 'frameName', name);
+  }
+
+  function closeFrame(){
+    var name = $api.attr($api.byId('header'), 'frameName');
+    api.closeFrame({name: name});
   }
 
   function aMapLocation() {
@@ -186,16 +151,12 @@
   }
 
   function goHistoryBack() {
+    var name = $api.attr($api.byId('header'), 'frameName');
     api.historyBack({
-      frameName: 'main'
+      frameName: name
     }, function (ret, err) {
-    });
-  }
-
-  function goBack() {
-    api.execScript({
-      frameName: 'main',
-      script: 'ReturnBtnClick()'
+      if (!ret.status) {
+      }
     });
   }
 
@@ -248,28 +209,61 @@
   }
 
   function headerLeft() {
+    var name = $api.attr($api.byId('header'), 'frameName');
     api.sendEvent({
       name: 'headerEvent',
       extra: {
-        type: 'left'
+        type: 'left',
+        frameName: name
       }
     })
   }
   function headerCenter() {
+    var name = $api.attr($api.byId('header'), 'frameName');
     api.sendEvent({
       name: 'headerEvent',
       extra: {
-        type: 'center'
+        type: 'center',
+        frameName: name
       }
     })
   }
   function headerRight() {
+    var name = $api.attr($api.byId('header'), 'frameName');
     api.sendEvent({
       name: 'headerEvent',
       extra: {
-        type: 'right'
+        type: 'right',
+        frameName: name
       }
     })
+  }
+
+  function initFrames(name){
+    api.setFrameClient({
+      frameName: name
+    }, function (ret) {
+      if (ret.state == 2) {
+        
+      } else if (ret.state == 3) {
+        $api.text($api.byId('title'), ret.title);
+      }
+      onBrowserStateChange(ret);
+    });
+
+    removeLogic();
+    api.addEventListener({
+      name: 'keyback'
+    }, function (ret, err) {
+      api.historyBack({
+        frameName: name
+      }, function (ret, err) {
+        if (!ret.status) {
+          api.closeWidget();
+        }
+      });
+    });
+    removeLogic();
   }
 </script>
 

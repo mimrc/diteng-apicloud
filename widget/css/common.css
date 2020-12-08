@@ -39,7 +39,7 @@ html,body{
     background: url(../image/goBack.png) no-repeat left;
     background-size: 0.8rem auto;
     font-size:17px;
-    background-position-x: 5px;
+    background-position-x: 20px;
     color:#FFF;
     display:-webkit-box;
     -webkit-box-pack:center;
@@ -54,5 +54,5 @@ html,body{
     display: -webkit-box;
     -webkit-box-pack: center;
     -webkit-box-align: center;
-    background-position-x: 50px;
+    background-position-x: 40px;
 }
