@@ -12,6 +12,16 @@
 </head>
 
 <body>
+  <div id="wrap">
+    <div id='header'>
+      <div class="back" tapmode="back-active" onclick="headerLeft()"></div>
+      <h1 id="title" onclick="headerCenter()">地藤管家</h1>
+      <div class="adpt" onclick="headerRight()"></div>
+    </div>
+    <div id="main">
+
+    </div>
+  </div>
 </body>
 <script type="text/javascript" src="./script/api.js"></script>
 <script type="text/javascript">
@@ -19,7 +29,7 @@
   var loadingRemoved = false;
   var url = "https://develop.diteng.site";
   // var url = "https://beta.diteng.site";
-  // var url = "http://192.168.10.119";
+  // var url = "http://192.168.10.119:82";
   var mainUrl;
   var headerPos, mainPos;
   var registrationId;
@@ -57,7 +67,7 @@
     });
 
     var param = { alias: aliasId };
-    //绑定用户别名为极光id。服务端可以指定别名进行消息推送
+    // 绑定用户别名为极光id。服务端可以指定别名进行消息推送
     ajpush.bindAliasAndTags(param, function (ret) {
       var statusCode = ret.statusCode;
       console.log("注册信息:" + JSON.stringify(ret));
@@ -73,72 +83,64 @@
         });
       }
     });
-    api.setFrameClient({
-      frameName: 'main'
-    }, function (ret) {
-      if (ret.state == 2) {
-        var urlTag = ret.url.indexOf("/forms/");
-        if (urlTag == -1) {
-          $api.attr($api.byId('goBack'), "onclick", "goHistoryBack()");
-          api.addEventListener({
-            name: 'keyback'
-          }, function (ret, err) {
-            api.historyBack({
-              frameName: 'main'
-            }, function (ret, err) {
-            });
-          });
-        } else {
-          $api.attr($api.byId('goBack'), "onclick", "goBack()");
-          api.addEventListener({
-            name: 'keyback'
-          }, function (ret, err) {
-            api.execScript({
-              frameName: 'main',
-              script: 'ReturnBtnClick()'
-            });
-          });
-        }
-      } else if (ret.state == 3) {
-        $api.text($api.byId('title'), ret.title);
-      }
-      onBrowserStateChange(ret);
-    });
-
-    removeLogic();
-    api.addEventListener({
-      name: 'keyback'
-    }, function (ret, err) {
-      api.historyBack({
-        frameName: 'main'
-      }, function (ret, err) {
-        if (!ret.status) {
-          api.closeWidget();
-        }
-      });
-    });
-    removeLogic();
+    
   };
 
   function initApp(mainUrl) {
-    api.openTabLayout({
-      name: 'main',
-      url: mainUrl,
-      bgColor: '#000',
-      hideNavigationBar: false,
-      navigationBar: {
-        background: '#000',
-        color: '#fff',
-        fontSize: 20,
-        fontWeight: 'bold',
-        leftButtons: [{
-          iconPath: "widget://image/left_back.png"
-        }],
-        rightButtons: [{
-          iconPath: "widget://image/more.png"
-        }]
-      }
+    var frameName = "main";
+    api.openFrame({
+      name: frameName,
+      url: mainUrl
     });
+    showFrame(frameName);
+    setHeaderFrameName(frameName);
+  }
+
+  function showFrame(frameName) {
+    var top = $api.fixStatusBar($api.byId('header'));
+    var frames = api.frames();
+    for (var key in frames) {
+      api.setFrameAttr({
+        name: frames[key].name,
+        rect: {
+          marginTop: top
+        },
+        hidden: false
+      });
+    }
+    initFrames(frameName)
+  }
+
+  function hideHeader(flog, name) {
+    document.querySelector("#header").style.display = flog ? "none" : "-webkit-box";
+    showFrame(name);
+  }
+
+  function newFrame(mainUrl) {
+    var frames = api.frames();
+    var name = 'main' + new Date().getTime();
+    api.openFrame({
+      name: name,
+      url: mainUrl
+    });
+    showFrame(name);
+    setTimeout(function(){
+      hideHeader(false, name);
+    },100);
+    setHeaderFrameName(name);
+  }
+
+  function setHeaderTitle(title) {
+    $api.text($api.byId('title'), title);
+  }
+
+  function setHeaderFrameName(name) {
+    $api.attr($api.byId('header'), 'frameName', name);
+  }
+
+  function closeFrame(){
+    var name = $api.attr($api.byId('header'), 'frameName');
+    api.closeFrame({name: name});
   }
 
   function aMapLocation() {
@@ -149,16 +151,19 @@
   }
 
   function goHistoryBack() {
+    var fname = $api.attr($api.byId('header'), 'frameName');
+    console.log(fname)
     api.historyBack({
-      frameName: 'main'
+      frameName: fname
     }, function (ret, err) {
-    });
-  }
-
-  function goBack() {
-    api.execScript({
-      frameName: 'main',
-      script: 'ReturnBtnClick()'
+      if (!ret.status) {
+        if( api.frames().length > 1){
+          api.execScript({
+            frameName: fname,
+            script:'window.ApiCloud.CloseFrame();'
+          })
+        }
+      }
     });
   }
 
@@ -210,6 +215,63 @@
     return true;
   }
 
+  function headerLeft() {
+    var name = $api.attr($api.byId('header'), 'frameName');
+    api.sendEvent({
+      name: 'headerEvent',
+      extra: {
+        type: 'left',
+        frameName: name
+      }
+    })
+  }
+  function headerCenter() {
+    var name = $api.attr($api.byId('header'), 'frameName');
+    api.sendEvent({
+      name: 'headerEvent',
+      extra: {
+        type: 'center',
+        frameName: name
+      }
+    })
+  }
+  function headerRight() {
+    var name = $api.attr($api.byId('header'), 'frameName');
+    api.sendEvent({
+      name: 'headerEvent',
+      extra: {
+        type: 'right',
+        frameName: name
+      }
+    })
+  }
+
+  function initFrames(name){
+    api.setFrameClient({
+      frameName: name
+    }, function (ret) {
+      if (ret.state == 2) {
+        
+      } else if (ret.state == 3) {
+        $api.text($api.byId('title'), ret.title);
+      }
+      onBrowserStateChange(ret);
+    });
+
+    removeLogic();
+    api.addEventListener({
+      name: 'keyback'
+    }, function (ret, err) {
+      api.historyBack({
+        frameName: name
+      }, function (ret, err) {
+        if (!ret.status) {
+          api.closeWidget();
+        }
+      });
+    });
+    removeLogic();
+  }
 </script>
 
 </html>
