@@ -2,276 +2,275 @@
 <html>
 
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport"
-    content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
-  <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
-  <title>地藤管家</title>
-  <link rel="stylesheet" type="text/css" href="./css/api.css" />
-  <link rel="stylesheet" type="text/css" href="./css/common.css" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>地藤管家</title>
+    <link rel="stylesheet" type="text/css" href="./css/api.css"/>
+    <link rel="stylesheet" type="text/css" href="./css/common.css"/>
 </head>
 
 <body>
-  <div id="wrap">
+<div id="wrap">
     <div id='header'>
-      <div class="back" tapmode="back-active" onclick="headerLeft()"></div>
-      <h1 id="title" onclick="headerCenter()">地藤管家</h1>
-      <div class="adpt" onclick="headerRight()"></div>
+        <div class="back" tapmode="back-active" onclick="headerLeft()"></div>
+        <h1 id="title" onclick="headerCenter()">地藤管家</h1>
+        <div class="adpt" onclick="headerRight()"></div>
     </div>
-    <div id="main">
-
-    </div>
-  </div>
+    <div id="main"></div>
+</div>
 </body>
 <script type="text/javascript" src="./script/api.js"></script>
 <script type="text/javascript">
-  var launchRemoved = false;
-  var loadingRemoved = false;
-  var url = "https://app.diteng.site";
-  // var url = "https://beta.diteng.site";
-  // var url = "http://192.168.10.119:82";
-  var mainUrl;
-  var headerPos, mainPos;
-  var registrationId;
-  var ajpush = null;
-  var aliasId = "";
-  apiready = function () {
-    var deviceId = api.deviceId;
-    var sType = api.systemType;
-    ajpush = api.require('ajpush');
+    var launchRemoved = false;
+    var loadingRemoved = false;
+    var url = "https://app.diteng.site";
+    // var url = "https://beta.diteng.site";
+    // var url = "http://192.168.10.119:82";
+    var mainUrl;
+    var headerPos, mainPos;
+    var registrationId;
+    var ajpush = null;
+    var aliasId = "";
+    apiready = function () {
+        var deviceId = api.deviceId;
+        var sType = api.systemType;
+        ajpush = api.require('ajpush');
 
-    var header = $api.byId('header');
-    // 适配iOS 7+，Android 4.4+状态栏
-    $api.fixStatusBar(header);
+        var header = $api.byId('header');
+        // 适配iOS 7+，Android 4.4+状态栏
+        $api.fixStatusBar(header);
 
-    var main = $api.byId('main');
-    headerPos = $api.offset(header);
-    mainPos = $api.offset(main);
+        var main = $api.byId('main');
+        headerPos = $api.offset(header);
+        mainPos = $api.offset(main);
 
-    deviceId = deviceId.replace(/-/g, "");
-    deviceId = deviceId.replace(/:/g, "");
+        deviceId = deviceId.replace(/-/g, "");
+        deviceId = deviceId.replace(/:/g, "");
 
-    if (sType == "android") {
-      mainUrl = url + '/public/WebDefault?CLIENTID=n_' + deviceId + '&device=android';
-      aliasId = "n_" + deviceId;
-    } else {
-      mainUrl = url + '/public/WebDefault?CLIENTID=i_' + deviceId + '&device=iphone';
-      aliasId = "i_" + deviceId;
-    }
-    console.log(mainUrl);
-    initApp(mainUrl);
-    ajpush.init(function (ret) {
-      if (ret && ret.status) {
-        console.log("极光推送注册成功");
-      }
-    });
-
-    var param = { alias: aliasId };
-    // 绑定用户别名为极光id。服务端可以指定别名进行消息推送
-    ajpush.bindAliasAndTags(param, function (ret) {
-      var statusCode = ret.statusCode;
-      console.log("注册信息:" + JSON.stringify(ret));
-    });
-
-    ajpush.getRegistrationId(function (ret, err) {
-      if (ret.id) {
-        registrationId = ret.id;
-        console.log("=registrationId==" + ret.id + "==aliasId==" + aliasId);
-        api.setPrefs({
-          key: 'registrationId',
-          value: ret.id
+        if (sType == "android") {
+            mainUrl = url + '/public/WebDefault?CLIENTID=n_' + deviceId + '&device=android';
+            aliasId = "n_" + deviceId;
+        } else {
+            mainUrl = url + '/public/WebDefault?CLIENTID=i_' + deviceId + '&device=iphone';
+            aliasId = "i_" + deviceId;
+        }
+        console.log(mainUrl);
+        initApp(mainUrl);
+        ajpush.init(function (ret) {
+            if (ret && ret.status) {
+                console.log("极光推送注册成功");
+            }
         });
-      }
-    });
-    
-  };
 
-  function initApp(mainUrl) {
-    var frameName = "main";
-    api.openFrame({
-      name: frameName,
-      url: mainUrl
-    });
-    showFrame(frameName);
-    setHeaderFrameName(frameName);
-  }
+        var param = {alias: aliasId};
+        // 绑定用户别名为极光id。服务端可以指定别名进行消息推送
+        ajpush.bindAliasAndTags(param, function (ret) {
+            var statusCode = ret.statusCode;
+            console.log("注册信息:" + JSON.stringify(ret));
+        });
 
-  function showFrame(frameName) {
-    var top = $api.fixStatusBar($api.byId('header'));
-    var frames = api.frames();
-    for (var key in frames) {
-      api.setFrameAttr({
-        name: frames[key].name,
-        rect: {
-          marginTop: top
-        },
-        hidden: false
-      });
+        ajpush.getRegistrationId(function (ret, err) {
+            if (ret.id) {
+                registrationId = ret.id;
+                console.log("=registrationId==" + ret.id + "==aliasId==" + aliasId);
+                api.setPrefs({
+                    key: 'registrationId',
+                    value: ret.id
+                });
+            }
+        });
+
+    };
+
+    function initApp(mainUrl) {
+        var frameName = "main";
+        api.openFrame({
+            name: frameName,
+            url: mainUrl
+        });
+        showFrame(frameName);
+        setHeaderFrameName(frameName);
     }
-    initFrames(frameName)
-  }
 
-  function hideHeader(flog, name) {
-    document.querySelector("#header").style.display = flog ? "none" : "-webkit-box";
-    showFrame(name);
-  }
-
-  function newFrame(mainUrl) {
-    var frames = api.frames();
-    var name = 'main' + new Date().getTime();
-    api.openFrame({
-      name: name,
-      url: mainUrl
-    });
-    showFrame(name);
-    setTimeout(function(){
-      hideHeader(false, name);
-    },100);
-    setHeaderFrameName(name);
-  }
-
-  function setHeaderTitle(title) {
-    $api.text($api.byId('title'), title);
-  }
-
-  function setHeaderFrameName(name) {
-    $api.attr($api.byId('header'), 'frameName', name);
-  }
-
-  function closeFrame(){
-    var name = $api.attr($api.byId('header'), 'frameName');
-    api.closeFrame({name: name});
-  }
-
-  function aMapLocation() {
-    var perms = ['camera', 'phone', 'storage']
-    if (!confirmPer(perms)) {
-      return;
-    }
-  }
-
-  function goHistoryBack() {
-    var fname = $api.attr($api.byId('header'), 'frameName');
-    console.log(fname)
-    api.historyBack({
-      frameName: fname
-    }, function (ret, err) {
-      if (!ret.status) {
-        if( api.frames().length > 1){
-          api.execScript({
-            frameName: fname,
-            script:'window.ApiCloud.CloseFrame();'
-          })
+    function showFrame(frameName) {
+        var top = $api.fixStatusBar($api.byId('header'));
+        var frames = api.frames();
+        for (var key in frames) {
+            api.setFrameAttr({
+                name: frames[key].name,
+                rect: {
+                    marginTop: top
+                },
+                hidden: false
+            });
         }
-      }
-    });
-  }
-
-  function onBrowserStateChange(ret) {
-    if (0 == ret.state) {//开始加载
-      if (!launchRemoved) {
-        launchRemoved = true;
-        removeLaunch();
-      }
+        initFrames(frameName)
     }
-    if (2 == ret.state) {
-      if (!loadingRemoved) {
-        loadingRemoved = true;
-      }
+
+    function hideHeader(flog, name) {
+        document.querySelector("#header").style.display = flog ? "none" : "-webkit-box";
+        showFrame(name);
     }
-  }
 
-  function removeLogic() {
-    setTimeout(function () {
-      if (!launchRemoved) {
-        launchRemoved = true;
-        removeLaunch();
-      }
-    }, 3000);
-  }
-
-  function removeLaunch() {
-    api.removeLaunchView({
-      animation: {
-        type: "fade",
-        subType: "from_right",
-        duration: 300
-      }
-    });
-  }
-
-  function confirmPer(perms) {
-    var has = api.hasPermission({
-      list: perms
-    });
-    if (!has || !has[0] || !has[0].granted) {
-      api.requestPermission({
-        list: perms,
-        code: 100001
-      }, function (ret, err) {
-      });
-      return false;
+    function newFrame(mainUrl) {
+        var frames = api.frames();
+        var name = 'main' + new Date().getTime();
+        api.openFrame({
+            name: name,
+            url: mainUrl
+        });
+        showFrame(name);
+        setTimeout(function () {
+            hideHeader(false, name);
+        }, 100);
+        setHeaderFrameName(name);
     }
-    return true;
-  }
 
-  function headerLeft() {
-    var name = $api.attr($api.byId('header'), 'frameName');
-    api.sendEvent({
-      name: 'headerEvent',
-      extra: {
-        type: 'left',
-        frameName: name
-      }
-    })
-  }
-  function headerCenter() {
-    var name = $api.attr($api.byId('header'), 'frameName');
-    api.sendEvent({
-      name: 'headerEvent',
-      extra: {
-        type: 'center',
-        frameName: name
-      }
-    })
-  }
-  function headerRight() {
-    var name = $api.attr($api.byId('header'), 'frameName');
-    api.sendEvent({
-      name: 'headerEvent',
-      extra: {
-        type: 'right',
-        frameName: name
-      }
-    })
-  }
+    function setHeaderTitle(title) {
+        $api.text($api.byId('title'), title);
+    }
 
-  function initFrames(name){
-    api.setFrameClient({
-      frameName: name
-    }, function (ret) {
-      if (ret.state == 2) {
-        
-      } else if (ret.state == 3) {
-        $api.text($api.byId('title'), ret.title);
-      }
-      onBrowserStateChange(ret);
-    });
+    function setHeaderFrameName(name) {
+        $api.attr($api.byId('header'), 'frameName', name);
+    }
 
-    removeLogic();
-    api.addEventListener({
-      name: 'keyback'
-    }, function (ret, err) {
-      api.historyBack({
-        frameName: name
-      }, function (ret, err) {
-        if (!ret.status) {
-          api.closeWidget();
+    function closeFrame() {
+        var name = $api.attr($api.byId('header'), 'frameName');
+        api.closeFrame({name: name});
+    }
+
+    function aMapLocation() {
+        var perms = ['camera', 'phone', 'storage']
+        if (!confirmPer(perms)) {
+            return;
         }
-      });
-    });
-    removeLogic();
-  }
+    }
+
+    function goHistoryBack() {
+        var fname = $api.attr($api.byId('header'), 'frameName');
+        console.log(fname)
+        api.historyBack({
+            frameName: fname
+        }, function (ret, err) {
+            if (!ret.status) {
+                if (api.frames().length > 1) {
+                    api.execScript({
+                        frameName: fname,
+                        script: 'window.ApiCloud.CloseFrame();'
+                    })
+                }
+            }
+        });
+    }
+
+    function onBrowserStateChange(ret) {
+        if (0 == ret.state) {//开始加载
+            if (!launchRemoved) {
+                launchRemoved = true;
+                removeLaunch();
+            }
+        }
+        if (2 == ret.state) {
+            if (!loadingRemoved) {
+                loadingRemoved = true;
+            }
+        }
+    }
+
+    function removeLogic() {
+        setTimeout(function () {
+            if (!launchRemoved) {
+                launchRemoved = true;
+                removeLaunch();
+            }
+        }, 3000);
+    }
+
+    function removeLaunch() {
+        api.removeLaunchView({
+            animation: {
+                type: "fade",
+                subType: "from_right",
+                duration: 300
+            }
+        });
+    }
+
+    function confirmPer(perms) {
+        var has = api.hasPermission({
+            list: perms
+        });
+        if (!has || !has[0] || !has[0].granted) {
+            api.requestPermission({
+                list: perms,
+                code: 100001
+            }, function (ret, err) {
+            });
+            return false;
+        }
+        return true;
+    }
+
+    function headerLeft() {
+        var name = $api.attr($api.byId('header'), 'frameName');
+        api.sendEvent({
+            name: 'headerEvent',
+            extra: {
+                type: 'left',
+                frameName: name
+            }
+        })
+    }
+
+    function headerCenter() {
+        var name = $api.attr($api.byId('header'), 'frameName');
+        api.sendEvent({
+            name: 'headerEvent',
+            extra: {
+                type: 'center',
+                frameName: name
+            }
+        })
+    }
+
+    function headerRight() {
+        var name = $api.attr($api.byId('header'), 'frameName');
+        api.sendEvent({
+            name: 'headerEvent',
+            extra: {
+                type: 'right',
+                frameName: name
+            }
+        })
+    }
+
+    function initFrames(name) {
+        api.setFrameClient({
+            frameName: name
+        }, function (ret) {
+            if (ret.state == 2) {
+
+            } else if (ret.state == 3) {
+                $api.text($api.byId('title'), ret.title);
+            }
+            onBrowserStateChange(ret);
+        });
+
+        removeLogic();
+        api.addEventListener({
+            name: 'keyback'
+        }, function (ret, err) {
+            api.historyBack({
+                frameName: name
+            }, function (ret, err) {
+                if (!ret.status) {
+                    api.closeWidget();
+                }
+            });
+        });
+        removeLogic();
+    }
 </script>
 
 </html>
