@@ -47,48 +47,46 @@
     $api.fixTabBar(footer);
     footerH = $api.offset(footer).h;
 
-        var main = $api.byId('main');
-        headerPos = $api.offset(header);
-        mainPos = $api.offset(main);
+    var main = $api.byId('main');
+    headerPos = $api.offset(header);
+    mainPos = $api.offset(main);
 
-        deviceId = deviceId.replace(/-/g, "");
-        deviceId = deviceId.replace(/:/g, "");
+    deviceId = deviceId.replace(/-/g, "");
+    deviceId = deviceId.replace(/:/g, "");
 
-        if (sType == "android") {
-            mainUrl = url + '/public/WebDefault?CLIENTID=n_' + deviceId + '&device=android';
-            aliasId = "n_" + deviceId;
-        } else {
-            mainUrl = url + '/public/WebDefault?CLIENTID=i_' + deviceId + '&device=iphone';
-            aliasId = "i_" + deviceId;
+    if (sType == "android") {
+        mainUrl = url + '/public/WebDefault?CLIENTID=n_' + deviceId + '&device=android';
+        aliasId = "n_" + deviceId;
+    } else {
+        mainUrl = url + '/public/WebDefault?CLIENTID=i_' + deviceId + '&device=iphone';
+        aliasId = "i_" + deviceId;
+    }
+    console.log(mainUrl);
+    initApp(mainUrl);
+    ajpush.init(function (ret) {
+        if (ret && ret.status) {
+            console.log("极光推送注册成功");
         }
-        console.log(mainUrl);
-        initApp(mainUrl);
-        ajpush.init(function (ret) {
-            if (ret && ret.status) {
-                console.log("极光推送注册成功");
-            }
-        });
-
-        var param = {alias: aliasId};
-        // 绑定用户别名为极光id。服务端可以指定别名进行消息推送
-        ajpush.bindAliasAndTags(param, function (ret) {
-            var statusCode = ret.statusCode;
-            console.log("注册信息:" + JSON.stringify(ret));
-        });
-
-        ajpush.getRegistrationId(function (ret, err) {
-            if (ret.id) {
-                registrationId = ret.id;
-                console.log("=registrationId==" + ret.id + "==aliasId==" + aliasId);
-                api.setPrefs({
-                    key: 'registrationId',
-                    value: ret.id
-                });
-            }
-        });
-      }
     });
-  };
+
+    var param = {alias: aliasId};
+    // 绑定用户别名为极光id。服务端可以指定别名进行消息推送
+    ajpush.bindAliasAndTags(param, function (ret) {
+        var statusCode = ret.statusCode;
+        console.log("注册信息:" + JSON.stringify(ret));
+    });
+
+    ajpush.getRegistrationId(function (ret, err) {
+        if (ret.id) {
+            registrationId = ret.id;
+            console.log("=registrationId==" + ret.id + "==aliasId==" + aliasId);
+            api.setPrefs({
+                key: 'registrationId',
+                value: ret.id
+            });
+        }
+    });
+  }
 
   function initApp(mainUrl) {
     var frameName = "main";
@@ -114,21 +112,12 @@
         hidden: false
       });
     }
-
-    function showFrame(frameName) {
-        var top = $api.fixStatusBar($api.byId('header'));
-        var frames = api.frames();
-        for (var key in frames) {
-            api.setFrameAttr({
-                name: frames[key].name,
-                rect: {
-                    marginTop: top
-                },
-                hidden: false
-            });
-        }
-        initFrames(frameName)
-    }
+  }
+  
+  function hideHeader(flog, name) {
+      document.querySelector("#header").style.display = flog ? "none" : "-webkit-box";
+      showFrame(name);
+  }
 
   function newFrame(mainUrl) {
     var frames = api.frames();
