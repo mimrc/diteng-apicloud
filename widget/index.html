@@ -21,17 +21,18 @@
     <div id="main">
 
     </div>
+    <footer id="footer"></footer>
   </div>
 </body>
 <script type="text/javascript" src="./script/api.js"></script>
 <script type="text/javascript">
   var launchRemoved = false;
   var loadingRemoved = false;
-  var url = "https://develop.diteng.site";
-  // var url = "https://beta.diteng.site";
+  // var url = "https://develop.diteng.site";
+  var url = "https://app.diteng.site";
   // var url = "http://192.168.10.119:82";
   var mainUrl;
-  var headerPos, mainPos;
+  var headerPos, mainPos,footerH;
   var registrationId;
   var ajpush = null;
   var aliasId = "";
@@ -41,8 +42,11 @@
     ajpush = api.require('ajpush');
 
     var header = $api.byId('header');
+    var footer = $api.byId('footer');
     // 适配iOS 7+，Android 4.4+状态栏
     $api.fixStatusBar(header);
+    $api.fixTabBar(footer);
+    footerH = $api.offset(footer).h;
 
     var main = $api.byId('main');
     headerPos = $api.offset(header);
@@ -83,14 +87,14 @@
         });
       }
     });
-    
   };
 
   function initApp(mainUrl) {
     var frameName = "main";
     api.openFrame({
       name: frameName,
-      url: mainUrl
+      url: mainUrl,
+      allowEdit: true
     });
     showFrame(frameName);
     setHeaderFrameName(frameName);
@@ -103,7 +107,8 @@
       api.setFrameAttr({
         name: frames[key].name,
         rect: {
-          marginTop: top
+          marginTop: top,
+          marginBottom: footerH
         },
         hidden: false
       });
@@ -121,7 +126,8 @@
     var name = 'main' + new Date().getTime();
     api.openFrame({
       name: name,
-      url: mainUrl
+      url: mainUrl,
+      allowEdit: true
     });
     showFrame(name);
     setTimeout(function(){
