@@ -56,3 +56,6 @@ html, body {
     -webkit-box-align: center;
     background-position-x: 40px;
 }
+#footer{
+    background: #f7f7f7;
+}

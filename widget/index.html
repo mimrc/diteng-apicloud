@@ -17,29 +17,35 @@
         <h1 id="title" onclick="headerCenter()">地藤管家</h1>
         <div class="adpt" onclick="headerRight()"></div>
     </div>
-    <div id="main"></div>
-</div>
+    <div id="main">
+
+    </div>
+    <footer id="footer"></footer>
+  </div>
 </body>
 <script type="text/javascript" src="./script/api.js"></script>
 <script type="text/javascript">
-    var launchRemoved = false;
-    var loadingRemoved = false;
-    var url = "https://app.diteng.site";
-    // var url = "https://beta.diteng.site";
-    // var url = "http://192.168.10.119:82";
-    var mainUrl;
-    var headerPos, mainPos;
-    var registrationId;
-    var ajpush = null;
-    var aliasId = "";
-    apiready = function () {
-        var deviceId = api.deviceId;
-        var sType = api.systemType;
-        ajpush = api.require('ajpush');
+  var launchRemoved = false;
+  var loadingRemoved = false;
+  // var url = "https://develop.diteng.site";
+  var url = "https://app.diteng.site";
+  // var url = "http://192.168.10.119:82";
+  var mainUrl;
+  var headerPos, mainPos,footerH;
+  var registrationId;
+  var ajpush = null;
+  var aliasId = "";
+  apiready = function () {
+    var deviceId = api.deviceId;
+    var sType = api.systemType;
+    ajpush = api.require('ajpush');
 
-        var header = $api.byId('header');
-        // 适配iOS 7+，Android 4.4+状态栏
-        $api.fixStatusBar(header);
+    var header = $api.byId('header');
+    var footer = $api.byId('footer');
+    // 适配iOS 7+，Android 4.4+状态栏
+    $api.fixStatusBar(header);
+    $api.fixTabBar(footer);
+    footerH = $api.offset(footer).h;
 
         var main = $api.byId('main');
         headerPos = $api.offset(header);
@@ -80,17 +86,33 @@
                 });
             }
         });
+      }
+    });
+  };
 
-    };
+  function initApp(mainUrl) {
+    var frameName = "main";
+    api.openFrame({
+      name: frameName,
+      url: mainUrl,
+      allowEdit: true
+    });
+    showFrame(frameName);
+    setHeaderFrameName(frameName);
+  }
 
-    function initApp(mainUrl) {
-        var frameName = "main";
-        api.openFrame({
-            name: frameName,
-            url: mainUrl
-        });
-        showFrame(frameName);
-        setHeaderFrameName(frameName);
+  function showFrame(frameName) {
+    var top = $api.fixStatusBar($api.byId('header'));
+    var frames = api.frames();
+    for (var key in frames) {
+      api.setFrameAttr({
+        name: frames[key].name,
+        rect: {
+          marginTop: top,
+          marginBottom: footerH
+        },
+        hidden: false
+      });
     }
 
     function showFrame(frameName) {
@@ -108,24 +130,20 @@
         initFrames(frameName)
     }
 
-    function hideHeader(flog, name) {
-        document.querySelector("#header").style.display = flog ? "none" : "-webkit-box";
-        showFrame(name);
-    }
-
-    function newFrame(mainUrl) {
-        var frames = api.frames();
-        var name = 'main' + new Date().getTime();
-        api.openFrame({
-            name: name,
-            url: mainUrl
-        });
-        showFrame(name);
-        setTimeout(function () {
-            hideHeader(false, name);
-        }, 100);
-        setHeaderFrameName(name);
-    }
+  function newFrame(mainUrl) {
+    var frames = api.frames();
+    var name = 'main' + new Date().getTime();
+    api.openFrame({
+      name: name,
+      url: mainUrl,
+      allowEdit: true
+    });
+    showFrame(name);
+    setTimeout(function(){
+      hideHeader(false, name);
+    },100);
+    setHeaderFrameName(name);
+  }
 
     function setHeaderTitle(title) {
         $api.text($api.byId('title'), title);
