@@ -56,6 +56,8 @@
 
     <preference name="userAgent" value="/apicloud/i"/>
 
+    <preference name="useWKWebView" value="true" />
+
     <feature name="ajpush">
         <param name="app_key" value="cc92570c841a688af5adc5b0"/>
         <param name="channel" value="465LEEN79DR51DN3"/>

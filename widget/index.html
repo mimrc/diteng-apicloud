@@ -27,9 +27,9 @@
 <script type="text/javascript">
   var launchRemoved = false;
   var loadingRemoved = false;
-  // var url = "https://develop.diteng.site";
+//   var url = "http://develop.diteng.site";
   var url = "https://app.diteng.site";
-  // var url = "http://192.168.10.119:82";
+//   var url = "http://192.168.12.120";
   var mainUrl;
   var headerPos, mainPos,footerH;
   var registrationId;
@@ -93,7 +93,8 @@
     api.openFrame({
       name: frameName,
       url: mainUrl,
-      allowEdit: true
+      allowEdit: true,
+      usewkWebview: true
     });
     showFrame(frameName);
     setHeaderFrameName(frameName);
@@ -109,7 +110,8 @@
           marginTop: top,
           marginBottom: footerH
         },
-        hidden: false
+        hidden: false,
+        usewkWebview: true
       });
     }
   }
@@ -125,7 +127,8 @@
     api.openFrame({
       name: name,
       url: mainUrl,
-      allowEdit: true
+      allowEdit: true,
+      usewkWebview: true
     });
     showFrame(name);
     setTimeout(function(){

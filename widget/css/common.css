@@ -8,6 +8,7 @@ html, body {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-flex-flow: column;
+    z-index: 99999;
 }
 
 #main {
